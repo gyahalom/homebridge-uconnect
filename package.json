@@ -1,16 +1,16 @@
 {
   "private": true,
-  "displayName": "Plugin Name",
-  "name": "homebridge-plugin-name",
+  "displayName": "UConnect Plugin",
+  "name": "homebridge-plugin-uconnect",
   "version": "1.0.0",
-  "description": "A short description about what your plugin does.",
+  "description": "A plugin to expose UConnect Car controls to lock/unlock car, start/stop engine and activate horn & lights and",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "git://github.com/gyahalom/homebridge-plugin-uconnect.git"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": "https://github.com/gyahalom/homebridge-plugin-uconnect/issues"
   },
   "engines": {
     "node": ">=14.18.1",
@@ -24,7 +24,10 @@
     "prepublishOnly": "npm run lint && npm run build"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "uconnect",
+    "mopar",
+    "chrysler"
   ],
   "dependencies": {},
   "devDependencies": {
