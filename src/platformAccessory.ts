@@ -122,7 +122,7 @@ export class UconnectPlatformAccessory {
     }
   }
 
-  handleUnlockTargetStateSet(value: CharacteristicValue) {
+  async handleUnlockTargetStateSet(value: CharacteristicValue) {
     this.platform.log.debug('Triggered SET UnlockTargetState:', value);
     if (value === this.platform.Characteristic.LockTargetState.UNSECURED) {
       if (await uapi.auth(this.platform.username, this.platform.password)) {
