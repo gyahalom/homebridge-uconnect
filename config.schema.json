@@ -1,15 +1,39 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "UconnectHomebridgePlugin",
   "pluginType": "platform",
   "singular": true,
+  "headerDisplay": "Homebridge plugin for Mopar Uconnect.",
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
+      "username": {
+        "title": "Username",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "format": "email",
+        "description": "Your username email for www.mopar.com"
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "required": true,
+        "description": "Your password for www.mopar.com"
+      },
+      "pin": {
+        "title": "PIN",
+        "type": "string",
+        "required": true,
+        "pattern": "[0-9]{4}",
+        "description": "Your PIN for remote commands"
+      },
+      "timeout": {
+        "title": "Timeout",
+        "type": "number",
+        "required": true,
+        "description": "Timeout to wait for remote commands",
+        "default": 30,
+        "minimum": 0,
+        "maximum": 300
       }
     }
   }
