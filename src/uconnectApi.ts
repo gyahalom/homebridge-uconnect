@@ -108,9 +108,11 @@ export async function getUserData() : Promise<object | string> {
 }
 
 interface VehicleInfo {
-  uuid: string;
   vin: string;
   title: string;
+  make: string;
+  model: string;
+  year: string;
 }
 
 export async function getVehicleData() : Promise<Array<VehicleInfo> | string> {
