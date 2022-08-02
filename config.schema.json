@@ -6,25 +6,34 @@
   "schema": {
     "type": "object",
     "properties": {
-      "username": {
-        "title": "Username",
+      "email": {
+        "title": "Email",
         "type": "string",
         "required": true,
         "format": "email",
-        "description": "Your username email for www.mopar.com"
+        "description": "Your username email for www.mopar.com",
+        "placeholder": "user@example.com"
       },
       "password": {
         "title": "Password",
         "type": "string",
         "required": true,
-        "description": "Your password for www.mopar.com"
+        "description": "Your password for www.mopar.com",
+        "placeholder": "mypassword",
+        "x-schema-form": {
+           "type": "password"
+         }
       },
       "pin": {
         "title": "PIN",
         "type": "string",
         "required": true,
         "pattern": "[0-9]{4}",
-        "description": "Your PIN for remote commands"
+        "description": "Your PIN for remote commands",
+        "placeholder": "1234",
+        "x-schema-form": {
+           "type": "password"
+         }
       },
       "timeout": {
         "title": "Timeout",
@@ -34,6 +43,13 @@
         "default": 30,
         "minimum": 0,
         "maximum": 300
+      },
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": false,
+        "placeholder": "Uconnect",
+        "description": "The name to assign this plugin for logging purposes. Default: Uconnect."
       }
     }
   }

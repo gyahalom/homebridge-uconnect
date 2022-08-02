@@ -26,7 +26,7 @@ export class UconnectHomebridgePlatform implements DynamicPlatformPlugin {
     public readonly config: PlatformConfig,
     public readonly api: API,
   ) {
-    this.username = config.username;
+    this.username = config.email;
     this.password = config.password;
     this.pin = config.pin;
     this.timeout = config.timeout;
