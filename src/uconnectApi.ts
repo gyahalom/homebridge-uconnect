@@ -19,10 +19,6 @@ function updateCookies(newCookies: Array<string> | undefined) : void {
   axios.defaults.headers.common['Cookie'] = createCookie(cookies);
 }
 
-function printCookies() : void {
-  console.log('Current Cookies parsed:', parseCookies(String(axios.defaults.headers.common['Cookie'])));
-}
-
 function parseCookies(cookies: string | Array<string> | undefined) : object {
   const cookieObj = {};
   const pat = /(?<key>\w+)=(?<value>[^;]+);?/;
@@ -80,10 +76,8 @@ export async function auth(username: string, password: string) : Promise<boolean
     return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.log('error message: ', error.message);
       return false;
     } else {
-      console.log('unexpected error: ', error);
       return false;
     }
   }
@@ -93,15 +87,12 @@ export async function getUserData() : Promise<object | string> {
   try {
     const { data, headers } = await axios.get('moparsvc/user/getProfile');
     updateCookies(headers['set-cookie']);
-    console.log(JSON.stringify(data, null, 4));
 
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.log('error message: ', error.message);
       return error.message;
     } else {
-      console.log('unexpected error: ', error);
       return 'An unexpected error occurred';
     }
   }
@@ -119,15 +110,12 @@ export async function getVehicleData() : Promise<Array<VehicleInfo> | string> {
   try {
     const { data, headers } = await axios.get('moparsvc/user/getVehicles');
     updateCookies(headers['set-cookie']);
-    console.log(JSON.stringify(data, null, 4));
 
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.log('error message: ', error.message);
       return error.message;
     } else {
-      console.log('unexpected error: ', error);
       return 'An unexpected error occurred';
     }
   }
@@ -136,15 +124,12 @@ export async function getVehicleData() : Promise<Array<VehicleInfo> | string> {
 export async function getToken() : Promise<string> {
   try {
     const { data } = await axios.get('moparsvc/token');
-    console.log(JSON.stringify(data, null, 4));
 
     return data.token;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.log('error message: ', error.message);
       return error.message;
     } else {
-      console.log('unexpected error: ', error);
       return 'An unexpected error occurred';
     }
   }
@@ -168,10 +153,8 @@ async function lockCarFunc(vin: string, pin: string, action: Action) : Promise<s
     return data.serviceRequestId;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.log('error message: ', error.message);
       return error.message;
     } else {
-      console.log('unexpected error: ', error);
       return 'An unexpected error occurred';
     }
   }
@@ -199,10 +182,8 @@ async function requestStatus(vin: string, requestId: string, action: Action) : P
     return data.status;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.log('error message: ', error.message);
       return error.message;
     } else {
-      console.log('unexpected error: ', error);
       return 'An unexpected error occurred';
     }
   }
@@ -216,7 +197,6 @@ async function checkStatus(vin: string, requestId: string, action: Action, timeo
     // Wait for 1s
     await delay(1000);
     status = await requestStatus(vin, requestId, action);
-    console.log('Request status:', status);
   } while (status === 'INITIATED' && timeout > 0);
   return status;
 }
