@@ -8,31 +8,36 @@ import * as uapi from './uconnectApi';
  * Each accessory may expose multiple services of different service types.
  */
 export class UconnectPlatformAccessory {
-  private lockState: CharacteristicValue;
-  private unlockState: CharacteristicValue;
+  private lockCurrentState: CharacteristicValue;
+  private lockTargetState: CharacteristicValue;
+  private unlockCurrentState: CharacteristicValue;
+  private unlockTargetState: CharacteristicValue;
 
   constructor(
     private readonly platform: UconnectHomebridgePlatform,
     private readonly accessory: PlatformAccessory,
   ) {
 
-    this.lockState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
-    this.unlockState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
+    this.lockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
+    this.lockTargetState = this.platform.Characteristic.LockTargetState.UNSECURED;
+    this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
+    this.unlockTargetState = this.platform.Characteristic.LockTargetState.SECURED;
 
     // set accessory information
+    const model = accessory.context.vehicle.year + ' ' + accessory.context.vehicle.model;
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Manufacturer')
-      .setCharacteristic(this.platform.Characteristic.Model, 'Model')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, 'Serial');
+      .setCharacteristic(this.platform.Characteristic.Manufacturer, accessory.context.vehicle.make)
+      .setCharacteristic(this.platform.Characteristic.Model, model)
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, accessory.context.vehicle.vin);
 
     // you can create multiple services for each accessory
     const lockService = this.accessory.getService('Lock Service') ||
       this.accessory.addService(this.platform.Service.LockMechanism, 'Lock Service',
-        accessory.context.device.vin + '-lock');
+        accessory.context.vehicle.vin + '-lock');
 
     const unlockService = this.accessory.getService('Unlock Service') ||
       this.accessory.addService(this.platform.Service.LockMechanism, 'Unlock Service',
-        accessory.context.device.vin + '-unlock');
+        accessory.context.vehicle.vin + '-unlock');
 
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
@@ -64,13 +69,13 @@ export class UconnectPlatformAccessory {
   handleLockCurrentStateGet() {
     this.platform.log.debug('Triggered GET LockCurrentState');
 
-    return this.lockState;
+    return this.lockCurrentState;
   }
 
   handleUnlockCurrentStateGet() {
     this.platform.log.debug('Triggered GET UnlockCurrentState');
 
-    return this.unlockState;
+    return this.unlockCurrentState;
   }
 
   /**
@@ -79,19 +84,13 @@ export class UconnectPlatformAccessory {
   handleLockTargetStateGet() {
     this.platform.log.debug('Triggered GET LockTargetState');
 
-    // set this to a valid value for LockTargetState
-    const currentValue = this.platform.Characteristic.LockTargetState.SECURED;
-
-    return currentValue;
+    return this.lockTargetState;
   }
 
   handleUnlockTargetStateGet() {
     this.platform.log.debug('Triggered GET UnlockTargetState');
 
-    // set this to a valid value for LockTargetState
-    const currentValue = this.platform.Characteristic.LockTargetState.UNSECURED;
-
-    return currentValue;
+    return this.unlockTargetState;
   }
 
   /**
@@ -100,21 +99,23 @@ export class UconnectPlatformAccessory {
   async handleLockTargetStateSet(value: CharacteristicValue) {
     this.platform.log.debug('Triggered SET LockTargetState:', value);
     if (value === this.platform.Characteristic.LockTargetState.SECURED) {
+      this.lockTargetState = value;
       if (await uapi.auth(this.platform.username, this.platform.password)) {
-        this.lockState = this.platform.Characteristic.LockTargetState.UNSECURED;
         const requestId = await uapi.lockCar(this.accessory.context.vehicle.vin, this.platform.pin);
         // TODO: Check no error in service ID
         // Wait for service request to complete within timeout
+        this.lockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
         const status = await uapi.checkLockStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Request status ended with:', status);
         if (status === 'SUCCESS') {
-          this.lockState = this.platform.Characteristic.LockCurrentState.SECURED;
+          this.lockCurrentState = this.platform.Characteristic.LockCurrentState.SECURED;
           setTimeout(() => {
-            this.lockState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
+            this.lockTargetState = this.platform.Characteristic.LockTargetState.UNSECURED;
+            this.lockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
           }, 3000);
         } else {
-          this.lockState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
+          this.lockTargetState = this.platform.Characteristic.LockTargetState.UNSECURED;
         }
       } else {
         this.platform.log.warn('Failed to authenticate');
@@ -125,21 +126,23 @@ export class UconnectPlatformAccessory {
   async handleUnlockTargetStateSet(value: CharacteristicValue) {
     this.platform.log.debug('Triggered SET UnlockTargetState:', value);
     if (value === this.platform.Characteristic.LockTargetState.UNSECURED) {
+      this.unlockTargetState = value;
       if (await uapi.auth(this.platform.username, this.platform.password)) {
-        this.lockState = this.platform.Characteristic.LockTargetState.UNSECURED;
         const requestId = await uapi.unlockCar(this.accessory.context.vehicle.vin, this.platform.pin);
         // TODO: Check no error in service ID
         // Wait for service request to complete within timeout
+        this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
         const status = await uapi.checkUnlockStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Request status ended with:', status);
         if (status === 'SUCCESS') {
-          this.unlockState = this.platform.Characteristic.LockCurrentState.UNSECURED;
+          this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNSECURED;
           setTimeout(() => {
-            this.unlockState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
+            this.unlockTargetState = this.platform.Characteristic.LockTargetState.SECURED;
+            this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
           }, 3000);
         } else {
-          this.unlockState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
+          this.unlockTargetState = this.platform.Characteristic.LockTargetState.SECURED;
         }
       } else {
         this.platform.log.warn('Failed to authenticate');
