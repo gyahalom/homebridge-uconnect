@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "UconnectHomebridgePlugin",
+  "pluginAlias": "Uconnect",
   "pluginType": "platform",
   "singular": true,
   "headerDisplay": "Homebridge plugin for Mopar Uconnect.",
