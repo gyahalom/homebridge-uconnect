@@ -135,10 +135,13 @@ export async function getToken() : Promise<string> {
   }
 }
 
-export type Action = 'LOCK' | 'UNLOCK';
 export type RequestStatus = 'INITIATED' | 'SUCCESS' | 'FAILURE';
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-async function lockCarFunc(vin: string, pin: string, action: Action) : Promise<string> {
+// Lock Mechanism
+export type LockAction = 'LOCK' | 'UNLOCK';
+
+async function lockCarFunc(vin: string, pin: string, action: LockAction) : Promise<string> {
   try {
     const reqData = {
       'action': action,
@@ -168,7 +171,7 @@ export function unlockCar(vin: string, pin: string) : Promise<string> {
   return lockCarFunc(vin, pin, 'UNLOCK');
 }
 
-async function requestStatus(vin: string, requestId: string, action: Action) : Promise<string> {
+async function requestLockStatus(vin: string, requestId: string, action: LockAction) : Promise<string> {
   try {
     const reqData = {
       'action': action,
@@ -189,24 +192,96 @@ async function requestStatus(vin: string, requestId: string, action: Action) : P
   }
 }
 
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function checkStatus(vin: string, requestId: string, action: Action, timeout: number) : Promise<string> {
+async function checkLockingStatus(vin: string, requestId: string, action: LockAction, timeout: number) : Promise<string> {
   let status = '';
   do {
     timeout--;
     // Wait for 1s
     await delay(1000);
-    status = await requestStatus(vin, requestId, action);
+    status = await requestLockStatus(vin, requestId, action);
   } while (status === 'INITIATED' && timeout > 0);
   return status;
 }
 
 export function checkLockStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
-  return checkStatus(vin, requestId, 'LOCK', timeout);
+  return checkLockingStatus(vin, requestId, 'LOCK', timeout);
 }
 
 export function checkUnlockStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
-  return checkStatus(vin, requestId, 'UNLOCK', timeout);
+  return checkLockingStatus(vin, requestId, 'UNLOCK', timeout);
+}
+
+// Engine Start Mechanism
+export type EngineAction = 'START' | 'STOP';
+
+async function engineFunc(vin: string, pin: string, action: EngineAction) : Promise<string> {
+  try {
+    const reqData = {
+      'action': action,
+      'vin': vin,
+      'pin': pin,
+    };
+    const token = await getToken();
+    const { data, headers } = await axios.post('moparsvc/connect/engine', qs.stringify(reqData),
+      {headers: {'MOPAR-CSRF-SALT': token}});
+    updateCookies(headers['set-cookie']);
+
+    return data.serviceRequestId;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return error.message;
+    } else {
+      return 'An unexpected error occurred';
+    }
+  }
+}
+
+export function startCar(vin: string, pin: string) : Promise<string> {
+  return engineFunc(vin, pin, 'START');
+}
+
+export function stopCar(vin: string, pin: string) : Promise<string> {
+  return engineFunc(vin, pin, 'STOP');
+}
+
+async function requestEngineStatus(vin: string, requestId: string, action: EngineAction) : Promise<string> {
+  try {
+    const reqData = {
+      'action': action,
+      'vin': vin,
+      'remoteServiceRequestID': requestId,
+    };
+    const url = 'moparsvc/connect/engine?' + qs.stringify(reqData);
+    const { data, headers } = await axios.get(url);
+    updateCookies(headers['set-cookie']);
+
+    return data.status;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return error.message;
+    } else {
+      return 'An unexpected error occurred';
+    }
+  }
+}
+
+async function checkEngineStatus(vin: string, requestId: string, action: EngineAction, timeout: number) : Promise<string> {
+  let status = '';
+  do {
+    timeout--;
+    // Wait for 1s
+    await delay(1000);
+    status = await requestEngineStatus(vin, requestId, action);
+  } while (status === 'INITIATED' && timeout > 0);
+  return status;
+}
+
+export function checkStartStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
+  return checkEngineStatus(vin, requestId, 'START', timeout);
+}
+
+export function checkStopStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
+  return checkEngineStatus(vin, requestId, 'STOP', timeout);
 }
 
 setAxiosDefaults();
