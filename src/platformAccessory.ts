@@ -12,6 +12,8 @@ export class UconnectPlatformAccessory {
   private lockTargetState: CharacteristicValue;
   private unlockCurrentState: CharacteristicValue;
   private unlockTargetState: CharacteristicValue;
+  private startEngineState: boolean;
+  private stopEngineState: boolean;
 
   constructor(
     private readonly platform: UconnectHomebridgePlatform,
@@ -22,6 +24,8 @@ export class UconnectPlatformAccessory {
     this.lockTargetState = this.platform.Characteristic.LockTargetState.UNSECURED;
     this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
     this.unlockTargetState = this.platform.Characteristic.LockTargetState.SECURED;
+    this.startEngineState = false;
+    this.stopEngineState = true;
 
     // set accessory information
     const model = accessory.context.vehicle.year + ' ' + accessory.context.vehicle.model;
@@ -34,32 +38,55 @@ export class UconnectPlatformAccessory {
     const lockService = this.accessory.getService('Lock Service') ||
       this.accessory.addService(this.platform.Service.LockMechanism, 'Lock Service',
         accessory.context.vehicle.vin + '-lock');
-
-    const unlockService = this.accessory.getService('Unlock Service') ||
-      this.accessory.addService(this.platform.Service.LockMechanism, 'Unlock Service',
-        accessory.context.vehicle.vin + '-unlock');
-
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
     lockService.setCharacteristic(this.platform.Characteristic.Name,
       accessory.context.vehicle.title + ' Lock');
-    unlockService.setCharacteristic(this.platform.Characteristic.Name,
-      accessory.context.vehicle.title + ' Unlock');
 
     // each service must implement at-minimum the "required characteristics" for the given service type
     // see https://developers.homebridge.io/#/service/Lightbulb
     lockService.getCharacteristic(this.platform.Characteristic.LockCurrentState)
       .onGet(this.handleLockCurrentStateGet.bind(this));
-    unlockService.getCharacteristic(this.platform.Characteristic.LockCurrentState)
-      .onGet(this.handleUnlockCurrentStateGet.bind(this));
 
     lockService.getCharacteristic(this.platform.Characteristic.LockTargetState)
       .onGet(this.handleLockTargetStateGet.bind(this))
       .onSet(this.handleLockTargetStateSet.bind(this));
 
+    const unlockService = this.accessory.getService('Unlock Service') ||
+      this.accessory.addService(this.platform.Service.LockMechanism, 'Unlock Service',
+        accessory.context.vehicle.vin + '-unlock');
+
+    unlockService.setCharacteristic(this.platform.Characteristic.Name,
+      accessory.context.vehicle.title + ' Unlock');
+
+    unlockService.getCharacteristic(this.platform.Characteristic.LockCurrentState)
+      .onGet(this.handleUnlockCurrentStateGet.bind(this));
+
     unlockService.getCharacteristic(this.platform.Characteristic.LockTargetState)
       .onGet(this.handleUnlockTargetStateGet.bind(this))
       .onSet(this.handleUnlockTargetStateSet.bind(this));
+
+    const engineStartService = this.accessory.getService('Start Service') ||
+      this.accessory.addService(this.platform.Service.Switch, 'Start Service',
+        accessory.context.vehicle.vin + '-start');
+
+    engineStartService.setCharacteristic(this.platform.Characteristic.Name,
+      accessory.context.vehicle.title + ' Start Engine');
+
+    engineStartService.getCharacteristic(this.platform.Characteristic.On)
+      .onGet(this.handleStartEngineGet.bind(this))
+      .onSet(this.handleStartEngineSet.bind(this));
+
+    const engineStopService = this.accessory.getService('Stop Service') ||
+      this.accessory.addService(this.platform.Service.Switch, 'Stop Service',
+        accessory.context.vehicle.vin + '-stop');
+
+    engineStopService.setCharacteristic(this.platform.Characteristic.Name,
+      accessory.context.vehicle.title + ' Stop Engine');
+
+    engineStopService.getCharacteristic(this.platform.Characteristic.On)
+      .onGet(this.handleStopEngineGet.bind(this))
+      .onSet(this.handleStopEngineSet.bind(this));
 
   }
 
@@ -107,7 +134,7 @@ export class UconnectPlatformAccessory {
         this.lockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
         const status = await uapi.checkLockStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
-        this.platform.log.debug('Request status ended with:', status);
+        this.platform.log.debug('Lock request status ended with:', status);
         if (status === 'SUCCESS') {
           this.lockCurrentState = this.platform.Characteristic.LockCurrentState.SECURED;
           setTimeout(() => {
@@ -134,7 +161,7 @@ export class UconnectPlatformAccessory {
         this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
         const status = await uapi.checkUnlockStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
-        this.platform.log.debug('Request status ended with:', status);
+        this.platform.log.debug('Unlock request status ended with:', status);
         if (status === 'SUCCESS') {
           this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNSECURED;
           setTimeout(() => {
@@ -143,6 +170,68 @@ export class UconnectPlatformAccessory {
           }, 3000);
         } else {
           this.unlockTargetState = this.platform.Characteristic.LockTargetState.SECURED;
+        }
+      } else {
+        this.platform.log.warn('Failed to authenticate');
+      }
+    }
+  }
+
+  handleStartEngineGet() {
+    this.platform.log.debug('Triggered GET Start Engine');
+
+    return this.startEngineState;
+  }
+
+  async handleStartEngineSet(value: CharacteristicValue) {
+    this.platform.log.debug('Triggered SET Start Engine:', value);
+    value = value as boolean;
+    if (value) {
+      this.startEngineState = value;
+      if (await uapi.auth(this.platform.username, this.platform.password)) {
+        const requestId = await uapi.startCar(this.accessory.context.vehicle.vin, this.platform.pin);
+        // TODO: Check no error in service ID
+        // Wait for service request to complete within timeout
+        const status = await uapi.checkStartStatus(this.accessory.context.vehicle.vin, requestId,
+          this.platform.timeout);
+        this.platform.log.debug('Engine Start request status ended with:', status);
+        if (status === 'SUCCESS') {
+          setTimeout(() => {
+            this.startEngineState = !value;
+          }, 3000);
+        } else {
+          this.startEngineState = !value;
+        }
+      } else {
+        this.platform.log.warn('Failed to authenticate');
+      }
+    }
+  }
+
+  handleStopEngineGet() {
+    this.platform.log.debug('Triggered GET Stop Engine');
+
+    return this.stopEngineState;
+  }
+
+  async handleStopEngineSet(value: CharacteristicValue) {
+    this.platform.log.debug('Triggered SET Stop Engine:', value);
+    value = value as boolean;
+    if (!value) {
+      this.stopEngineState = value;
+      if (await uapi.auth(this.platform.username, this.platform.password)) {
+        const requestId = await uapi.stopCar(this.accessory.context.vehicle.vin, this.platform.pin);
+        // TODO: Check no error in service ID
+        // Wait for service request to complete within timeout
+        const status = await uapi.checkStopStatus(this.accessory.context.vehicle.vin, requestId,
+          this.platform.timeout);
+        this.platform.log.debug('Engine Stop request status ended with:', status);
+        if (status === 'SUCCESS') {
+          setTimeout(() => {
+            this.stopEngineState = !value;
+          }, 3000);
+        } else {
+          this.stopEngineState = !value;
         }
       } else {
         this.platform.log.warn('Failed to authenticate');
