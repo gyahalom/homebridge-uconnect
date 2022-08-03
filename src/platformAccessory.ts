@@ -29,6 +29,7 @@ export class UconnectPlatformAccessory {
 
     // set accessory information
     const model = accessory.context.vehicle.year + ' ' + accessory.context.vehicle.model;
+    const name = accessory.context.vehicle.title || 'Car';
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, accessory.context.vehicle.make)
       .setCharacteristic(this.platform.Characteristic.Model, model)
@@ -40,8 +41,7 @@ export class UconnectPlatformAccessory {
         accessory.context.vehicle.vin + '-lock');
     // set the service name, this is what is displayed as the default name on the Home app
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    lockService.setCharacteristic(this.platform.Characteristic.Name,
-      accessory.context.vehicle.title + ' Lock');
+    lockService.setCharacteristic(this.platform.Characteristic.Name, name + ' Lock');
 
     // each service must implement at-minimum the "required characteristics" for the given service type
     // see https://developers.homebridge.io/#/service/Lightbulb
@@ -56,8 +56,7 @@ export class UconnectPlatformAccessory {
       this.accessory.addService(this.platform.Service.LockMechanism, 'Unlock Service',
         accessory.context.vehicle.vin + '-unlock');
 
-    unlockService.setCharacteristic(this.platform.Characteristic.Name,
-      accessory.context.vehicle.title + ' Unlock');
+    unlockService.setCharacteristic(this.platform.Characteristic.Name, name + ' Unlock');
 
     unlockService.getCharacteristic(this.platform.Characteristic.LockCurrentState)
       .onGet(this.handleUnlockCurrentStateGet.bind(this));
@@ -70,8 +69,7 @@ export class UconnectPlatformAccessory {
       this.accessory.addService(this.platform.Service.Switch, 'Start Service',
         accessory.context.vehicle.vin + '-start');
 
-    engineStartService.setCharacteristic(this.platform.Characteristic.Name,
-      accessory.context.vehicle.title + ' Start Engine');
+    engineStartService.setCharacteristic(this.platform.Characteristic.Name, name + ' Start Engine');
 
     engineStartService.getCharacteristic(this.platform.Characteristic.On)
       .onGet(this.handleStartEngineGet.bind(this))
@@ -81,8 +79,7 @@ export class UconnectPlatformAccessory {
       this.accessory.addService(this.platform.Service.Switch, 'Stop Service',
         accessory.context.vehicle.vin + '-stop');
 
-    engineStopService.setCharacteristic(this.platform.Characteristic.Name,
-      accessory.context.vehicle.title + ' Stop Engine');
+    engineStopService.setCharacteristic(this.platform.Characteristic.Name, name + ' Stop Engine');
 
     engineStopService.getCharacteristic(this.platform.Characteristic.On)
       .onGet(this.handleStopEngineGet.bind(this))
