@@ -101,7 +101,6 @@ export async function getUserData() : Promise<object | string> {
 }
 
 interface VehicleInfo {
-  uuid: string;
   vin: string;
   title: string;
   make: string;
@@ -124,9 +123,9 @@ export async function getVehicleData() : Promise<Array<VehicleInfo> | string> {
   }
 }
 
-export async function getVehicleHealthReport(uuid: string) : Promise<object | string> {
+export async function getVehicleHealthReport(vin: string) : Promise<object | string> {
   try {
-    const url = 'getVHR?' + qs.stringify({uuid: uuid});
+    const url = 'getVHR?' + qs.stringify({vin: vin});
     const { data, headers } = await axios.get(url);
     updateCookies(headers['set-cookie']);
 
