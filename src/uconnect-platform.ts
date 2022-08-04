@@ -1,7 +1,7 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { UconnectPlatformAccessory } from './platformAccessory';
-import * as uapi from './uconnectApi';
+import { UconnectPlatformAccessory } from './uconnect-accessory';
+import * as uapi from './uconnect-api';
 
 /**
  * HomebridgePlatform

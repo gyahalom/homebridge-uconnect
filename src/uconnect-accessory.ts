@@ -1,6 +1,6 @@
 import { PlatformAccessory, CharacteristicValue } from 'homebridge';
-import { UconnectHomebridgePlatform } from './platform';
-import * as uapi from './uconnectApi';
+import { UconnectHomebridgePlatform } from './uconnect-platform';
+import * as uapi from './uconnect-api';
 
 /**
  * Platform Accessory

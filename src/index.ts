@@ -1,7 +1,7 @@
 import { API } from 'homebridge';
 
 import { PLATFORM_NAME } from './settings';
-import { UconnectHomebridgePlatform } from './platform';
+import { UconnectHomebridgePlatform } from './uconnect-platform';
 
 /**
  * This method registers the platform with Homebridge
