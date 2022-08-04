@@ -2,7 +2,6 @@ import axios from 'axios';
 import qs from 'qs';
 
 function setAxiosDefaults() : void {
-  axios.defaults.baseURL = 'https://www.mopar.com';
   axios.defaults.headers.common['content-type'] = 'application/x-www-form-urlencoded';
   axios.defaults.maxRedirects = 0;
   axios.defaults.validateStatus = function (status) {
@@ -36,6 +35,7 @@ function parseCookies(cookies: string | Array<string> | undefined) : object {
 
 export async function auth(username: string, password: string) : Promise<boolean> {
   try {
+    axios.defaults.baseURL = 'https://www.mopar.com';
     const data1 = {
       'USER': username,
       'PASSWORD': password,
@@ -73,6 +73,8 @@ export async function auth(username: string, password: string) : Promise<boolean
     const res6 = await axios.get('chrysler/en-us/my-vehicle/dashboard.html');
     updateCookies(res6.headers['set-cookie']);
 
+    axios.defaults.baseURL = 'https://www.mopar.com/moparsvc';
+
     return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -85,7 +87,7 @@ export async function auth(username: string, password: string) : Promise<boolean
 
 export async function getUserData() : Promise<object | string> {
   try {
-    const { data, headers } = await axios.get('moparsvc/user/getProfile');
+    const { data, headers } = await axios.get('user/getProfile');
     updateCookies(headers['set-cookie']);
 
     return data;
@@ -99,6 +101,7 @@ export async function getUserData() : Promise<object | string> {
 }
 
 interface VehicleInfo {
+  uuid: string;
   vin: string;
   title: string;
   make: string;
@@ -108,7 +111,23 @@ interface VehicleInfo {
 
 export async function getVehicleData() : Promise<Array<VehicleInfo> | string> {
   try {
-    const { data, headers } = await axios.get('moparsvc/user/getVehicles');
+    const { data, headers } = await axios.get('user/getVehicles');
+    updateCookies(headers['set-cookie']);
+
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return error.message;
+    } else {
+      return 'An unexpected error occurred';
+    }
+  }
+}
+
+export async function getVehicleHealthReport(uuid: string) : Promise<object | string> {
+  try {
+    const url = 'getVHR?' + qs.stringify({uuid: uuid});
+    const { data, headers } = await axios.get(url);
     updateCookies(headers['set-cookie']);
 
     return data;
@@ -123,7 +142,7 @@ export async function getVehicleData() : Promise<Array<VehicleInfo> | string> {
 
 export async function getToken() : Promise<string> {
   try {
-    const { data } = await axios.get('moparsvc/token');
+    const { data } = await axios.get('token');
 
     return data.token;
   } catch (error) {
@@ -149,7 +168,7 @@ async function lockCarFunc(vin: string, pin: string, action: LockAction) : Promi
       'pin': pin,
     };
     const token = await getToken();
-    const { data, headers } = await axios.post('moparsvc/connect/lock', qs.stringify(reqData),
+    const { data, headers } = await axios.post('connect/lock', qs.stringify(reqData),
       {headers: {'MOPAR-CSRF-SALT': token}});
     updateCookies(headers['set-cookie']);
 
@@ -178,7 +197,7 @@ async function requestLockStatus(vin: string, requestId: string, action: LockAct
       'vin': vin,
       'remoteServiceRequestID': requestId,
     };
-    const url = 'moparsvc/connect/lock?' + qs.stringify(reqData);
+    const url = 'connect/lock?' + qs.stringify(reqData);
     const { data, headers } = await axios.get(url);
     updateCookies(headers['set-cookie']);
 
@@ -222,7 +241,7 @@ async function engineFunc(vin: string, pin: string, action: EngineAction) : Prom
       'pin': pin,
     };
     const token = await getToken();
-    const { data, headers } = await axios.post('moparsvc/connect/engine', qs.stringify(reqData),
+    const { data, headers } = await axios.post('connect/engine', qs.stringify(reqData),
       {headers: {'MOPAR-CSRF-SALT': token}});
     updateCookies(headers['set-cookie']);
 
@@ -251,7 +270,7 @@ async function requestEngineStatus(vin: string, requestId: string, action: Engin
       'vin': vin,
       'remoteServiceRequestID': requestId,
     };
-    const url = 'moparsvc/connect/engine?' + qs.stringify(reqData);
+    const url = 'connect/engine?' + qs.stringify(reqData);
     const { data, headers } = await axios.get(url);
     updateCookies(headers['set-cookie']);
 
