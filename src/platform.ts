@@ -65,18 +65,19 @@ export class UconnectHomebridgePlatform implements DynamicPlatformPlugin {
     // A real plugin you would discover accessories from the local network, cloud services
     // or a user-defined array in the platform config.
     if (! await uapi.auth(this.username, this.password)) {
-      this.log.warn('Failed to authenticate');
+      this.log.error('Failed to authenticate');
       return;
     }
     const vehicles = await uapi.getVehicleData();
     if (typeof(vehicles) === 'string') {
-      this.log.warn('Failed to retrieve vehicle list');
+      this.log.error('Failed to retrieve vehicle list:', vehicles);
       return;
     }
 
     // loop over the discovered devices and register each one if it has not already been registered
     for (const vehicle of vehicles) {
 
+      this.log.debug('Retrieved vehicle info:', vehicle);
       // generate a unique id for the accessory this should be generated from
       // something globally unique, but constant, for example, the device serial
       // number or MAC address

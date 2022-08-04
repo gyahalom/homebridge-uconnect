@@ -133,16 +133,18 @@ export class UconnectPlatformAccessory {
           this.platform.timeout);
         this.platform.log.debug('Lock request status ended with:', status);
         if (status === 'SUCCESS') {
+          this.platform.log.info('Lock command was successful');
           this.lockCurrentState = this.platform.Characteristic.LockCurrentState.SECURED;
           setTimeout(() => {
             this.lockTargetState = this.platform.Characteristic.LockTargetState.UNSECURED;
             this.lockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
           }, 3000);
         } else {
+          this.platform.log.error('Lock command failed');
           this.lockTargetState = this.platform.Characteristic.LockTargetState.UNSECURED;
         }
       } else {
-        this.platform.log.warn('Failed to authenticate');
+        this.platform.log.error('Failed to authenticate');
       }
     }
   }
@@ -160,16 +162,18 @@ export class UconnectPlatformAccessory {
           this.platform.timeout);
         this.platform.log.debug('Unlock request status ended with:', status);
         if (status === 'SUCCESS') {
+          this.platform.log.info('Unlock command was successful');
           this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNSECURED;
           setTimeout(() => {
             this.unlockTargetState = this.platform.Characteristic.LockTargetState.SECURED;
             this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
           }, 3000);
         } else {
+          this.platform.log.error('Unlock command failed');
           this.unlockTargetState = this.platform.Characteristic.LockTargetState.SECURED;
         }
       } else {
-        this.platform.log.warn('Failed to authenticate');
+        this.platform.log.error('Failed to authenticate');
       }
     }
   }
@@ -193,14 +197,16 @@ export class UconnectPlatformAccessory {
           this.platform.timeout);
         this.platform.log.debug('Engine Start request status ended with:', status);
         if (status === 'SUCCESS') {
+          this.platform.log.info('Engine start command was successful');
           setTimeout(() => {
             this.startEngineState = !value;
           }, 3000);
         } else {
+          this.platform.log.error('Engine start command failed');
           this.startEngineState = !value;
         }
       } else {
-        this.platform.log.warn('Failed to authenticate');
+        this.platform.log.error('Failed to authenticate');
       }
     }
   }
@@ -224,14 +230,16 @@ export class UconnectPlatformAccessory {
           this.platform.timeout);
         this.platform.log.debug('Engine Stop request status ended with:', status);
         if (status === 'SUCCESS') {
+          this.platform.log.info('Engine stop command was successful');
           setTimeout(() => {
             this.stopEngineState = !value;
           }, 3000);
         } else {
+          this.platform.log.error('Engine stop command failed');
           this.stopEngineState = !value;
         }
       } else {
-        this.platform.log.warn('Failed to authenticate');
+        this.platform.log.error('Failed to authenticate');
       }
     }
   }
