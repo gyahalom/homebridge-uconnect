@@ -136,7 +136,7 @@ export async function getToken() : Promise<string> {
 }
 
 export type RequestStatus = 'INITIATED' | 'SUCCESS' | 'FAILURE';
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Lock Mechanism
 export type LockAction = 'LOCK' | 'UNLOCK';
@@ -282,6 +282,12 @@ export function checkStartStatus(vin: string, requestId: string, timeout: number
 
 export function checkStopStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
   return checkEngineStatus(vin, requestId, 'STOP', timeout);
+}
+
+export function isValidRequestId(requestId: string) : boolean {
+  const hex = '[a-fA-F0-9]';
+  const pat = new RegExp(`${hex}{8}-${hex}{4}-${hex}{4}-${hex}{4}-${hex}{12}`);
+  return pat.test(requestId);
 }
 
 setAxiosDefaults();
