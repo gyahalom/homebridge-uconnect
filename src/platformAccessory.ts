@@ -126,9 +126,11 @@ export class UconnectPlatformAccessory {
       this.lockTargetState = value;
       if (await uapi.auth(this.platform.username, this.platform.password)) {
         const requestId = await uapi.lockCar(this.accessory.context.vehicle.vin, this.platform.pin);
-        // TODO: Check no error in service ID
-        // Wait for service request to complete within timeout
+        if (!uapi.isValidRequestId(requestId)) {
+          this.platform.log.error('Lock failed to submit request:', requestId);
+        }
         this.lockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
+        // Wait for service request to complete within timeout
         const status = await uapi.checkLockStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Lock request status ended with:', status);
@@ -155,9 +157,11 @@ export class UconnectPlatformAccessory {
       this.unlockTargetState = value;
       if (await uapi.auth(this.platform.username, this.platform.password)) {
         const requestId = await uapi.unlockCar(this.accessory.context.vehicle.vin, this.platform.pin);
-        // TODO: Check no error in service ID
-        // Wait for service request to complete within timeout
+        if (!uapi.isValidRequestId(requestId)) {
+          this.platform.log.error('Unlock failed to submit request:', requestId);
+        }
         this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
+        // Wait for service request to complete within timeout
         const status = await uapi.checkUnlockStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Unlock request status ended with:', status);
@@ -191,13 +195,15 @@ export class UconnectPlatformAccessory {
       this.startEngineState = value;
       if (await uapi.auth(this.platform.username, this.platform.password)) {
         const requestId = await uapi.startCar(this.accessory.context.vehicle.vin, this.platform.pin);
-        // TODO: Check no error in service ID
+        if (!uapi.isValidRequestId(requestId)) {
+          this.platform.log.error('Engine Start failed to submit request:', requestId);
+        }
         // Wait for service request to complete within timeout
         const status = await uapi.checkStartStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Engine Start request status ended with:', status);
         if (status === 'SUCCESS') {
-          this.platform.log.info('Engine start command was successful');
+          this.platform.log.info('Engine Start command was successful');
           setTimeout(() => {
             this.startEngineState = !value;
           }, 3000);
@@ -224,13 +230,15 @@ export class UconnectPlatformAccessory {
       this.stopEngineState = value;
       if (await uapi.auth(this.platform.username, this.platform.password)) {
         const requestId = await uapi.stopCar(this.accessory.context.vehicle.vin, this.platform.pin);
-        // TODO: Check no error in service ID
+        if (!uapi.isValidRequestId(requestId)) {
+          this.platform.log.error('Engine Stop failed to submit request:', requestId);
+        }
         // Wait for service request to complete within timeout
         const status = await uapi.checkStopStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Engine Stop request status ended with:', status);
         if (status === 'SUCCESS') {
-          this.platform.log.info('Engine stop command was successful');
+          this.platform.log.info('Engine Stop command was successful');
           setTimeout(() => {
             this.stopEngineState = !value;
           }, 3000);
