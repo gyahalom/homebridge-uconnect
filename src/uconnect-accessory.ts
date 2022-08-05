@@ -124,7 +124,7 @@ export class UconnectPlatformAccessory {
     this.platform.log.debug('Triggered SET LockTargetState:', value);
     if (value === this.platform.Characteristic.LockTargetState.SECURED) {
       this.lockTargetState = value;
-      if (await uapi.auth(this.platform.username, this.platform.password)) {
+      if (await uapi.signIn(this.platform.username, this.platform.password)) {
         const requestId = await uapi.lockCar(this.accessory.context.vehicle.vin, this.platform.pin);
         if (!uapi.isValidRequestId(requestId)) {
           this.platform.log.error('Lock failed to submit request:', requestId);
@@ -155,7 +155,7 @@ export class UconnectPlatformAccessory {
     this.platform.log.debug('Triggered SET UnlockTargetState:', value);
     if (value === this.platform.Characteristic.LockTargetState.UNSECURED) {
       this.unlockTargetState = value;
-      if (await uapi.auth(this.platform.username, this.platform.password)) {
+      if (await uapi.signIn(this.platform.username, this.platform.password)) {
         const requestId = await uapi.unlockCar(this.accessory.context.vehicle.vin, this.platform.pin);
         if (!uapi.isValidRequestId(requestId)) {
           this.platform.log.error('Unlock failed to submit request:', requestId);
@@ -193,7 +193,7 @@ export class UconnectPlatformAccessory {
     value = value as boolean;
     if (value) {
       this.startEngineState = value;
-      if (await uapi.auth(this.platform.username, this.platform.password)) {
+      if (await uapi.signIn(this.platform.username, this.platform.password)) {
         const requestId = await uapi.startCar(this.accessory.context.vehicle.vin, this.platform.pin);
         if (!uapi.isValidRequestId(requestId)) {
           this.platform.log.error('Engine Start failed to submit request:', requestId);
@@ -228,7 +228,7 @@ export class UconnectPlatformAccessory {
     value = value as boolean;
     if (!value) {
       this.stopEngineState = value;
-      if (await uapi.auth(this.platform.username, this.platform.password)) {
+      if (await uapi.signIn(this.platform.username, this.platform.password)) {
         const requestId = await uapi.stopCar(this.accessory.context.vehicle.vin, this.platform.pin);
         if (!uapi.isValidRequestId(requestId)) {
           this.platform.log.error('Engine Stop failed to submit request:', requestId);

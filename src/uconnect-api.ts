@@ -33,7 +33,7 @@ function parseCookies(cookies: string | Array<string> | undefined) : object {
   return cookieObj;
 }
 
-export async function auth(username: string, password: string) : Promise<boolean> {
+export async function signIn(username: string, password: string) : Promise<boolean> {
   try {
     axios.defaults.baseURL = 'https://www.mopar.com';
     const data1 = {
@@ -81,6 +81,20 @@ export async function auth(username: string, password: string) : Promise<boolean
       return false;
     } else {
       return false;
+    }
+  }
+}
+
+export async function signOut() : Promise<string> {
+  try {
+    axios.defaults.baseURL = 'https://www.mopar.com';
+    await axios.post('sign-out');
+    return '';
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return error.message;
+    } else {
+      return 'An unexpected error occurred';
     }
   }
 }

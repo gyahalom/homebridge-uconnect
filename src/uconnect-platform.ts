@@ -64,7 +64,7 @@ export class UconnectHomebridgePlatform implements DynamicPlatformPlugin {
     // EXAMPLE ONLY
     // A real plugin you would discover accessories from the local network, cloud services
     // or a user-defined array in the platform config.
-    if (! await uapi.auth(this.username, this.password)) {
+    if (! await uapi.signIn(this.username, this.password)) {
       this.log.error('Failed to authenticate');
       return;
     }
