@@ -1,10 +1,14 @@
 {
-  "private": true,
-  "displayName": "Uconnect Plugin",
+  "displayName": "Homebridge Uconnect",
   "name": "homebridge-uconnect",
   "version": "1.0.0",
-  "description": "A plugin to expose Uconnect Car controls to lock/unlock car, start/stop engine and activate horn & lights and",
-  "license": "Apache-2.0",
+  "description": "A plugin to expose Uconnect Car controls to lock/unlock car and start/stop engine",
+  "license": "MIT",
+  "author": {
+    "name": "Gilad Yahalom",
+    "url": "https://github.com/gyahalom"
+  },
+  "homepage": "https://github.com/gyahalom/homebridge-uconnect#readme",
   "repository": {
     "type": "git",
     "url": "git://github.com/gyahalom/homebridge-uconnect.git"
@@ -21,13 +25,20 @@
     "lint": "eslint src/**.ts --max-warnings=0",
     "watch": "npm run build && npm link && nodemon",
     "build": "rimraf ./dist && tsc",
+    "clean": "rimraf ./dist",
     "prepublishOnly": "npm run lint && npm run build"
   },
   "keywords": [
+    "homebridge",
     "homebridge-plugin",
     "uconnect",
     "mopar",
-    "chrysler"
+    "chrysler",
+    "dodge",
+    "jeep",
+    "ram",
+    "fiat",
+    "car"
   ],
   "dependencies": {
     "axios": "^0.27.2",
