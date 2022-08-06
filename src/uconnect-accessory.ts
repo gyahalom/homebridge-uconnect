@@ -1,6 +1,6 @@
 import { PlatformAccessory, CharacteristicValue } from 'homebridge';
 import { UconnectHomebridgePlatform } from './uconnect-platform';
-import * as uapi from './uconnect-api';
+import { moparApi } from './mopar-api';
 
 /**
  * Platform Accessory
@@ -124,14 +124,14 @@ export class UconnectPlatformAccessory {
     this.platform.log.debug('Triggered SET LockTargetState:', value);
     if (value === this.platform.Characteristic.LockTargetState.SECURED) {
       this.lockTargetState = value;
-      if (await uapi.signIn(this.platform.username, this.platform.password)) {
-        const requestId = await uapi.lockCar(this.accessory.context.vehicle.vin, this.platform.pin);
-        if (!uapi.isValidRequestId(requestId)) {
+      if (await moparApi.signIn(this.platform.username, this.platform.password)) {
+        const requestId = await moparApi.lockCar(this.accessory.context.vehicle.vin, this.platform.pin);
+        if (!moparApi.isValidRequestId(requestId)) {
           this.platform.log.error('Lock failed to submit request:', requestId);
         }
         this.lockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
         // Wait for service request to complete within timeout
-        const status = await uapi.checkLockStatus(this.accessory.context.vehicle.vin, requestId,
+        const status = await moparApi.checkLockStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Lock request status ended with:', status);
         if (status === 'SUCCESS') {
@@ -155,14 +155,14 @@ export class UconnectPlatformAccessory {
     this.platform.log.debug('Triggered SET UnlockTargetState:', value);
     if (value === this.platform.Characteristic.LockTargetState.UNSECURED) {
       this.unlockTargetState = value;
-      if (await uapi.signIn(this.platform.username, this.platform.password)) {
-        const requestId = await uapi.unlockCar(this.accessory.context.vehicle.vin, this.platform.pin);
-        if (!uapi.isValidRequestId(requestId)) {
+      if (await moparApi.signIn(this.platform.username, this.platform.password)) {
+        const requestId = await moparApi.unlockCar(this.accessory.context.vehicle.vin, this.platform.pin);
+        if (!moparApi.isValidRequestId(requestId)) {
           this.platform.log.error('Unlock failed to submit request:', requestId);
         }
         this.unlockCurrentState = this.platform.Characteristic.LockCurrentState.UNKNOWN;
         // Wait for service request to complete within timeout
-        const status = await uapi.checkUnlockStatus(this.accessory.context.vehicle.vin, requestId,
+        const status = await moparApi.checkUnlockStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Unlock request status ended with:', status);
         if (status === 'SUCCESS') {
@@ -193,13 +193,13 @@ export class UconnectPlatformAccessory {
     value = value as boolean;
     if (value) {
       this.startEngineState = value;
-      if (await uapi.signIn(this.platform.username, this.platform.password)) {
-        const requestId = await uapi.startCar(this.accessory.context.vehicle.vin, this.platform.pin);
-        if (!uapi.isValidRequestId(requestId)) {
+      if (await moparApi.signIn(this.platform.username, this.platform.password)) {
+        const requestId = await moparApi.startCar(this.accessory.context.vehicle.vin, this.platform.pin);
+        if (!moparApi.isValidRequestId(requestId)) {
           this.platform.log.error('Engine Start failed to submit request:', requestId);
         }
         // Wait for service request to complete within timeout
-        const status = await uapi.checkStartStatus(this.accessory.context.vehicle.vin, requestId,
+        const status = await moparApi.checkStartStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Engine Start request status ended with:', status);
         if (status === 'SUCCESS') {
@@ -228,13 +228,13 @@ export class UconnectPlatformAccessory {
     value = value as boolean;
     if (!value) {
       this.stopEngineState = value;
-      if (await uapi.signIn(this.platform.username, this.platform.password)) {
-        const requestId = await uapi.stopCar(this.accessory.context.vehicle.vin, this.platform.pin);
-        if (!uapi.isValidRequestId(requestId)) {
+      if (await moparApi.signIn(this.platform.username, this.platform.password)) {
+        const requestId = await moparApi.stopCar(this.accessory.context.vehicle.vin, this.platform.pin);
+        if (!moparApi.isValidRequestId(requestId)) {
           this.platform.log.error('Engine Stop failed to submit request:', requestId);
         }
         // Wait for service request to complete within timeout
-        const status = await uapi.checkStopStatus(this.accessory.context.vehicle.vin, requestId,
+        const status = await moparApi.checkStopStatus(this.accessory.context.vehicle.vin, requestId,
           this.platform.timeout);
         this.platform.log.debug('Engine Stop request status ended with:', status);
         if (status === 'SUCCESS') {

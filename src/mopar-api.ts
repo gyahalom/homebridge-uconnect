@@ -33,7 +33,7 @@ function parseCookies(cookies: string | Array<string> | undefined) : object {
   return cookieObj;
 }
 
-export async function signIn(username: string, password: string) : Promise<boolean> {
+async function signIn(username: string, password: string) : Promise<boolean> {
   try {
     axios.defaults.baseURL = 'https://www.mopar.com';
     const data1 = {
@@ -85,7 +85,7 @@ export async function signIn(username: string, password: string) : Promise<boole
   }
 }
 
-export async function signOut() : Promise<string> {
+async function signOut() : Promise<string> {
   try {
     axios.defaults.baseURL = 'https://www.mopar.com';
     await axios.post('sign-out');
@@ -99,7 +99,7 @@ export async function signOut() : Promise<string> {
   }
 }
 
-export async function getUserData() : Promise<object | string> {
+async function getUserData() : Promise<object | string> {
   try {
     const { data, headers } = await axios.get('user/getProfile');
     updateCookies(headers['set-cookie']);
@@ -122,7 +122,7 @@ interface VehicleInfo {
   year: string;
 }
 
-export async function getVehicleData() : Promise<Array<VehicleInfo> | string> {
+async function getVehicleData() : Promise<Array<VehicleInfo> | string> {
   try {
     const { data, headers } = await axios.get('user/getVehicles');
     updateCookies(headers['set-cookie']);
@@ -137,7 +137,7 @@ export async function getVehicleData() : Promise<Array<VehicleInfo> | string> {
   }
 }
 
-export async function getVehicleHealthReport(vin: string) : Promise<object | string> {
+async function getVehicleHealthReport(vin: string) : Promise<object | string> {
   try {
     const url = 'getVHR?' + qs.stringify({vin: vin});
     const { data, headers } = await axios.get(url);
@@ -153,7 +153,7 @@ export async function getVehicleHealthReport(vin: string) : Promise<object | str
   }
 }
 
-export async function getToken() : Promise<string> {
+async function getToken() : Promise<string> {
   try {
     const { data } = await axios.get('token');
 
@@ -195,11 +195,11 @@ async function lockCarFunc(vin: string, pin: string, action: LockAction) : Promi
   }
 }
 
-export function lockCar(vin: string, pin: string) : Promise<string> {
+function lockCar(vin: string, pin: string) : Promise<string> {
   return lockCarFunc(vin, pin, 'LOCK');
 }
 
-export function unlockCar(vin: string, pin: string) : Promise<string> {
+function unlockCar(vin: string, pin: string) : Promise<string> {
   return lockCarFunc(vin, pin, 'UNLOCK');
 }
 
@@ -235,11 +235,11 @@ async function checkLockingStatus(vin: string, requestId: string, action: LockAc
   return status;
 }
 
-export function checkLockStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
+function checkLockStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
   return checkLockingStatus(vin, requestId, 'LOCK', timeout);
 }
 
-export function checkUnlockStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
+function checkUnlockStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
   return checkLockingStatus(vin, requestId, 'UNLOCK', timeout);
 }
 
@@ -268,11 +268,11 @@ async function engineFunc(vin: string, pin: string, action: EngineAction) : Prom
   }
 }
 
-export function startCar(vin: string, pin: string) : Promise<string> {
+function startCar(vin: string, pin: string) : Promise<string> {
   return engineFunc(vin, pin, 'START');
 }
 
-export function stopCar(vin: string, pin: string) : Promise<string> {
+function stopCar(vin: string, pin: string) : Promise<string> {
   return engineFunc(vin, pin, 'STOP');
 }
 
@@ -308,18 +308,35 @@ async function checkEngineStatus(vin: string, requestId: string, action: EngineA
   return status;
 }
 
-export function checkStartStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
+function checkStartStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
   return checkEngineStatus(vin, requestId, 'START', timeout);
 }
 
-export function checkStopStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
+function checkStopStatus(vin: string, requestId: string, timeout: number) : Promise<string> {
   return checkEngineStatus(vin, requestId, 'STOP', timeout);
 }
 
-export function isValidRequestId(requestId: string) : boolean {
+function isValidRequestId(requestId: string) : boolean {
   const hex = '[a-fA-F0-9]';
   const pat = new RegExp(`${hex}{8}-${hex}{4}-${hex}{4}-${hex}{4}-${hex}{12}`);
   return pat.test(requestId);
 }
 
 setAxiosDefaults();
+export const moparApi = {
+  signIn: signIn,
+  signOut: signOut,
+  getUserData: getUserData,
+  getVehicleData: getVehicleData,
+  getVehicleHealthReport: getVehicleHealthReport,
+  getToken: getToken,
+  lockCar: lockCar,
+  unlockCar: unlockCar,
+  checkLockStatus: checkLockStatus,
+  checkUnlockStatus: checkUnlockStatus,
+  startCar: startCar,
+  stopCar: stopCar,
+  checkStartStatus: checkStartStatus,
+  checkStopStatus: checkStopStatus,
+  isValidRequestId: isValidRequestId,
+};

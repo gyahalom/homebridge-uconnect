@@ -1,7 +1,7 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { UconnectPlatformAccessory } from './uconnect-accessory';
-import * as uapi from './uconnect-api';
+import { moparApi } from './mopar-api';
 
 /**
  * HomebridgePlatform
@@ -64,11 +64,11 @@ export class UconnectHomebridgePlatform implements DynamicPlatformPlugin {
     // EXAMPLE ONLY
     // A real plugin you would discover accessories from the local network, cloud services
     // or a user-defined array in the platform config.
-    if (! await uapi.signIn(this.username, this.password)) {
+    if (! await moparApi.signIn(this.username, this.password)) {
       this.log.error('Failed to authenticate');
       return;
     }
-    const vehicles = await uapi.getVehicleData();
+    const vehicles = await moparApi.getVehicleData();
     if (typeof(vehicles) === 'string') {
       this.log.error('Failed to retrieve vehicle list:', vehicles);
       return;
