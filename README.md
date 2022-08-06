@@ -1,150 +1,64 @@
+<SPAN ALIGN="CENTER" STYLE="text-align:center">
+<DIV ALIGN="CENTER" STYLE="text-align:center">
 
-<p align="center">
+# Homebridge Uconnect
 
-<img src="https://github.com/homebridge/branding/raw/master/logos/homebridge-wordmark-logo-vertical.png" width="150">
+## Uconnect car lock/unlock and engine start/stop support for [Homebridge](https://homebridge.io).
+</DIV>
+</SPAN>
 
-</p>
+`homebridge-uconnect` is a [Homebridge](https://homebridge.io) plugin that makes Uconnect-enabled cars (which include an active SiriusXM Guardian subscritpion) available to [Apple's](https://www.apple.com) [HomeKit](https://www.apple.com/ios/home) smart home platform. 
+Uconnect remote commands are available on several models of Chrysler, Didge, Jeep, Ram and Fiat. Though I have only tested this module with my own car (2022 Chrysler Pacifica Hybrid). Please feel free to buy me more cars for testing :).
 
+*NOTE:* Make sure you can submit remote commands to your car via the [Uconnect app](https://www.driveuconnect.com/uconnect-app.html) or [Mopar website](https://www.mopar.com) to ensure this plugin will work with your car as well.
 
-# Homebridge Platform Plugin Template
+## Why use this plugin for Uconnect support in HomeKit?
+My motivation in creating this plugin was to enable Siri control over the basic remote car functions (lock/unlock doors, start/stop engine), as well as allow adding the functions to HomeKit automations (e.g. lock doors ar night when person is at home etc.).
+The plugin will discover all Uconnect supported cars associated with your Mopar account after providing your account credentials in the configuration. Since there is no indication of the doors lock state or engine state, unfortunately the functions cannot be implemented as a "true" lock/switch accessory. The solution used resembles the one in the Uconnect app where there is a separate control for each function - lock door/unlock door/start engine/stop engine.
+I have tested these functionalities with my car and they work reasonable well (with some delay as with the regular Uconnect app) and allow Siri automation and use in shortcuts and scenes. However I have done very limited testing, please feel free to let me know if this works (or not) for your case, I will try to resolve any issues I can but it is not my day job, I welcome contributions and Pull Requests.
 
-This is a template Homebridge platform plugin and can be used as a base to help you get started developing your own plugin.
+### Features
+- ***Easy* configuration - all you need is your Mopar username email, password and Uconnect 3 digit PIN to get started.**.
 
-This template should be used in conjunction with the [developer documentation](https://developers.homebridge.io/). A full list of all supported service types, and their characteristics is available on this site.
+- **Automatic detection and configuration of all supported cars.** By default - all of your supported cars are made available in HomeKit.
 
-## Clone As Template
+## Documentation
+* [Installation](#installation): installing this plugin, including system requirements.
+* [Plugin Configuration](#plugin-configuration): how to quickly get up and running.
+* [Additional Notes](#notes): some things you should be aware of, including myQ-specific quirks.
+* [Changelog](https://github.com/gyahalom/homebridge-uconnect/blob/master/Changelog.md): changes and release history of this plugin.
 
-Click the link below to create a new GitHub Repository using this template, or click the *Use This Template* button above.
+## Installation
+If you are new to Homebridge, please first read the [Homebridge](https://homebridge.io) [documentation](https://github.com/homebridge/homebridge/wiki) and installation instructions before proceeding.
 
-<span align="center">
+If you have installed the [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x), you can intall this plugin by going to the `Plugins` tab and searching for `homebridge-uconnect` and installing it.
 
-### [Create New Repository From Template](https://github.com/homebridge/homebridge-plugin-template/generate)
+If you prefer to install `homebridge-uconnect` from the command line, you can do so by executing:
 
-</span>
-
-## Setup Development Environment
-
-To develop Homebridge plugins you must have Node.js 12 or later installed, and a modern code editor such as [VS Code](https://code.visualstudio.com/). This plugin template uses [TypeScript](https://www.typescriptlang.org/) to make development easier and comes with pre-configured settings for [VS Code](https://code.visualstudio.com/) and ESLint. If you are using VS Code install these extensions:
-
-* [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-
-## Install Development Dependencies
-
-Using a terminal, navigate to the project folder and run this command to install the development dependencies:
-
-```
-npm install
-```
-
-## Update package.json
-
-Open the [`package.json`](./package.json) and change the following attributes:
-
-* `name` - this should be prefixed with `homebridge-` or `@username/homebridge-` and contain no spaces or special characters apart from a dashes
-* `displayName` - this is the "nice" name displayed in the Homebridge UI
-* `repository.url` - Link to your GitHub repo
-* `bugs.url` - Link to your GitHub repo issues page
-
-When you are ready to publish the plugin you should set `private` to false, or remove the attribute entirely.
-
-## Update Plugin Defaults
-
-Open the [`src/settings.ts`](./src/settings.ts) file and change the default values:
-
-* `PLATFORM_NAME` - Set this to be the name of your platform. This is the name of the platform that users will use to register the plugin in the Homebridge `config.json`.
-* `PLUGIN_NAME` - Set this to be the same name you set in the [`package.json`](./package.json) file. 
-
-Open the [`config.schema.json`](./config.schema.json) file and change the following attribute:
-
-* `pluginAlias` - set this to match the `PLATFORM_NAME` you defined in the previous step.
-
-## Build Plugin
-
-TypeScript needs to be compiled into JavaScript before it can run. The following command will compile the contents of your [`src`](./src) directory and put the resulting code into the `dist` folder.
-
-```
-npm run build
+```sh
+sudo npm install -g homebridge-uconnect
 ```
 
-## Link To Homebridge
+### Things To Be Aware Of
+- As mentioned above the plugin will add an accessory tile for each supported car associated with your Mopar account
+- Each accessory will contain 4 elements:
+  - `Car Lock` - A lock in the UNSECURE position to enable remote locking. After locking it will automatically revert to the UNSECURE position after 3 seconds.
+  - `Car Unlock` - A lock in the SECURE position to enable remote unlocking. After unlocking it will automatically revert to the SECURE position after 3 seconds.
+  - `Car Start Engine` - A switch in the OFF position to enable remote engine start. After starting it will automatically revert to the OFF position after 3 seconds.
+  - `Car Stop Engine` - A switch in the ON position to enable remote engine stop. After stopping it will automatically revert to the ON position after 3 seconds.
+- You can separate these controls into separate tiles in the Home App accessory settings if you prefer.
 
-Run this command so your global install of Homebridge can discover the plugin in your development environment:
+## Plugin Configuration
+If you choose to configure this plugin directly instead of using the [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x), you'll need to add the platform to your `config.json` in your home directory inside `.homebridge`.
 
-```
-npm link
-```
-
-You can now start Homebridge, use the `-D` flag so you can see debug log messages in your plugin:
-
-```
-homebridge -D
-```
-
-## Watch For Changes and Build Automatically
-
-If you want to have your code compile automatically as you make changes, and restart Homebridge automatically between changes you can run:
-
-```
-npm run watch
-```
-
-This will launch an instance of Homebridge in debug mode which will restart every time you make a change to the source code. It will load the config stored in the default location under `~/.homebridge`. You may need to stop other running instances of Homebridge while using this command to prevent conflicts. You can adjust the Homebridge startup command in the [`nodemon.json`](./nodemon.json) file.
-
-## Customise Plugin
-
-You can now start customising the plugin template to suit your requirements.
-
-* [`src/platform.ts`](./src/platform.ts) - this is where your device setup and discovery should go.
-* [`src/platformAccessory.ts`](./src/platformAccessory.ts) - this is where your accessory control logic should go, you can rename or create multiple instances of this file for each accessory type you need to implement as part of your platform plugin. You can refer to the [developer documentation](https://developers.homebridge.io/) to see what characteristics you need to implement for each service type.
-* [`config.schema.json`](./config.schema.json) - update the config schema to match the config you expect from the user. See the [Plugin Config Schema Documentation](https://developers.homebridge.io/#/config-schema).
-
-## Versioning Your Plugin
-
-Given a version number `MAJOR`.`MINOR`.`PATCH`, such as `1.4.3`, increment the:
-
-1. **MAJOR** version when you make breaking changes to your plugin,
-2. **MINOR** version when you add functionality in a backwards compatible manner, and
-3. **PATCH** version when you make backwards compatible bug fixes.
-
-You can use the `npm version` command to help you with this:
-
-```bash
-# major update / breaking changes
-npm version major
-
-# minor update / new features
-npm version update
-
-# patch / bugfixes
-npm version patch
+```js
+"platforms": [{
+    "platform": "uconnect",
+    "email": "email@email.com",
+    "password": "password",
+    "pin": "1234",
+    "timeout": 30
+}]
 ```
 
-## Publish Package
-
-When you are ready to publish your plugin to [npm](https://www.npmjs.com/), make sure you have removed the `private` attribute from the [`package.json`](./package.json) file then run:
-
-```
-npm publish
-```
-
-If you are publishing a scoped plugin, i.e. `@username/homebridge-xxx` you will need to add `--access=public` to command the first time you publish.
-
-#### Publishing Beta Versions
-
-You can publish *beta* versions of your plugin for other users to test before you release it to everyone.
-
-```bash
-# create a new pre-release version (eg. 2.1.0-beta.1)
-npm version prepatch --preid beta
-
-# publsh to @beta
-npm publish --tag=beta
-```
-
-Users can then install the  *beta* version by appending `@beta` to the install command, for example:
-
-```
-sudo npm install -g homebridge-example-plugin@beta
-```
-
-
+For most people, I recommend using [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x) to configure this plugin rather than doing so directly. It's easier to use for most users, especially newer users, and less prone to typos, leading to other problems.
