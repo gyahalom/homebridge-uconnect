@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge Uconnect",
   "name": "homebridge-uconnect",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A plugin to expose Uconnect Car controls to lock/unlock car and start/stop engine",
   "license": "MIT",
   "author": {
@@ -15,6 +15,10 @@
   },
   "bugs": {
     "url": "https://github.com/gyahalom/homebridge-uconnect/issues"
+  },
+  "funding": {
+    "type" : "paypal",
+    "url" : "https://paypal.me/GiladYahalom"
   },
   "engines": {
     "node": ">=14.18.1",
